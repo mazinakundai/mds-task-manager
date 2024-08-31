@@ -1,23 +1,23 @@
 version: '3.8'
 
 services:
-  app:
+  mds-app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: laravel-app
+    container_name: mds-task-manager-app
     ports:
       - "8000:80"
     volumes:
-      - .:/var/www/html
+      - ./src:/var/www/html/src 
     networks:
       - app-network
     depends_on:
-      - db
+      - mds-db
 
-  db:
+  mds-db:
     image: mysql:8.0
-    container_name: mysql-db
+    container_name: mds-task-manager-db
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: laravel
@@ -32,10 +32,7 @@ services:
 
 networks:
   app-network:
-    external: true
-    name: app-network
     driver: bridge
 
 volumes:
-  dbdata:
-
+  dbdata:  

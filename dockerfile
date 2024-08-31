@@ -11,33 +11,24 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set the working directory
+# Set the working directory to /var/www/html
 WORKDIR /var/www/html
 
 # Copy Apache configuration
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
 
-# Check if Laravel is already installed
-RUN if [ ! -d "vendor" ]; then \
-    composer create-project --prefer-dist laravel/laravel .; \
+# Check if Laravel is already installed, if not, create it in the src folder
+RUN if [ ! -d "src/vendor" ]; then \
+    composer create-project --prefer-dist laravel/laravel src; \
     fi
 
-# Copy the src folder after Laravel is installed
-COPY src/ /var/www/html/src/
-
-# Copy the .env file and generate application key if needed
-COPY .docker/laravel.env /var/www/html/.env
-RUN php artisan key:generate || true
-
 # Set file permissions for Laravel
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+RUN chown -R www-data:www-data /var/www/html/src \
+    && chmod -R 755 /var/www/html/src
 
 # Expose port 80
 EXPOSE 80
 
-
 # Start Apache
 CMD ["apache2-foreground"]
-
